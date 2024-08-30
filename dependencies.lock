@@ -1,0 +1,21 @@
+dependencies:
+  espressif/cmake_utilities:
+    component_hash: 351350613ceafba240b761b4ea991e0f231ac7a9f59a9ee901f751bddc0bb18f
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 0.5.3
+  espressif/pwm_audio:
+    component_hash: 48a27530549e0c3d69a88f2a8a981feaf908ea1c033e43deb8f1a2ad941a6dd1
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 1.1.1
+  idf:
+    component_hash: null
+    source:
+      type: idf
+    version: 5.2.1
+manifest_hash: 6ba5f37b5aabd0b7eae569dc223b8af12afe3417f7920555ead9c36f4bb1704b
+target: esp32s3
+version: 1.0.0
