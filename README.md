@@ -17,4 +17,4 @@ I built it using ESP-IDF v.5.4.0:
 
 `idf.py build flash`
 
-Partially unrelated: Snes9x also runs on the ESP32-S3 with approx. 45 fps. You can watch it [here](https://www.youtube.com/watch?v=lVLDIexSZ18).
+Snes9x also runs on the ESP32-S3 with approx. 45 fps. You can watch it [here](https://www.youtube.com/watch?v=lVLDIexSZ18).
