@@ -1,0 +1,8 @@
+
+
+.vscode/*
+roms/*.smc
+
+build/*
+sdkconfig
+sdkconfig.old
