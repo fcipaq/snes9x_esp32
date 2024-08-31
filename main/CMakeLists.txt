@@ -1,5 +1,5 @@
-idf_component_register(SRCS ./main.cpp
-                       INCLUDE_DIRS ./.. ./../components/lcddrv ./../components/snes9x
+idf_component_register(SRC_DIRS "."
+                       INCLUDE_DIRS ./.. ./../components/lcddrv ./../components/snes9x "."
                        REQUIRES
                        PRIV_REQUIRES )
 

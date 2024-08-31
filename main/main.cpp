@@ -49,6 +49,8 @@
 #include "esp_lcd_mipi_dsi.h"
 #include "esp_lcd_ek79007.h"
 
+#include "pad.h"
+
 #define TEST_LCD_H_RES (1024)
 #define TEST_LCD_V_RES (600)
 #define TEST_LCD_BIT_PER_PIXEL (16)
@@ -445,7 +447,7 @@ uint32_t S9xReadJoypad(int32_t port) {
 
   uint32_t joypad = 0;
 
-#if 0
+#if USE_PAD
   if (dpad & DPAD_LEFT) joypad |= SNES_LEFT_MASK;
   if (dpad & DPAD_RIGHT) joypad |= SNES_RIGHT_MASK;
   if (dpad & DPAD_UP) joypad |= SNES_UP_MASK;
@@ -550,6 +552,9 @@ extern "C" {
 
 void app_main(void) {
   setup();
+#if USE_PAD
+  init_pad();
+#endif
   /****************************/
   /*    Unused pin to Hi-Z    */
   /****************************/
@@ -670,7 +675,7 @@ void app_main(void) {
   unsigned long fps_timer = millis();
 
   while (1) {
-#if 0
+#if USE_PAD
       dpad = ctrl_dpad_state();
       buts = ctrl_button_state();
 #endif
