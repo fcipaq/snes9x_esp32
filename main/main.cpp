@@ -618,7 +618,7 @@ void app_main(void) {
 
   // load a ROM from flash
   spi_flash_mmap_handle_t out_handle;
-  assert(spi_flash_mmap(0x400000 /* size_t src_addr */,
+  assert(spi_flash_mmap(0x310000 /* size_t src_addr */,
                         0x400000 /* size_t size */,
                         SPI_FLASH_MMAP_DATA /* spi_flash_mmap_memory_t memory */,
                         (const void **)&(tmp_rom) /* const void **out_ptr */,
