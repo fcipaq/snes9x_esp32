@@ -252,7 +252,8 @@ bool S9xInitMemory(void)
    Memory.RAM   = (uint8_t*) heap_caps_calloc(1, RAM_SIZE, MALLOC_CAP_SPIRAM);  //128 KB
    Memory.SRAM  = (uint8_t*) heap_caps_calloc(1, SRAM_SIZE, MALLOC_CAP_SPIRAM);  // 128 KB
    Memory.VRAM  = (uint8_t*) heap_caps_calloc(1, VRAM_SIZE, MALLOC_CAP_SPIRAM);  // 64 KB
-   Memory.ROM   = (uint8_t*) heap_caps_calloc(1, MAX_ROM_SIZE + 0x200, MALLOC_CAP_SPIRAM);
+// allocated when actually loading the ROM
+//   Memory.ROM   = (uint8_t*) heap_caps_calloc(1, MAX_ROM_SIZE + 0x200, MALLOC_CAP_SPIRAM);
    Memory.FillRAM = (uint8_t*) malloc(0x8000);  // 32 KB
 
    IPPU.TileCache = (uint8_t*) heap_caps_calloc(1, MAX_2BIT_TILES * 2, MALLOC_CAP_INTERNAL);  // 8KB 128 fcipaq
@@ -261,7 +262,7 @@ bool S9xInitMemory(void)
    bytes0x2000 = (uint8_t *) heap_caps_calloc(1, 0x2000, MALLOC_CAP_INTERNAL);  // 8 KB
    // 308 KB
 
-   if (!Memory.RAM || !Memory.VRAM || !Memory.SRAM || !Memory.FillRAM || !Memory.ROM
+   if (!Memory.RAM || !Memory.VRAM || !Memory.SRAM || !Memory.FillRAM //|| !Memory.ROM
       || !IPPU.TileCache || !IPPU.TileCached || !bytes0x2000)
    {
       S9xDeinitMemory();

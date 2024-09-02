@@ -96,7 +96,7 @@ volatile uint16_t *fb_hw[2] = { NULL, NULL };
 struct timeval _startTime;
 
 volatile uint16_t *fb_back = NULL;
-volatile int fb_num = 1;
+volatile int fb_num = 0;
 volatile int line_block_cnt = 0;
 
 volatile SemaphoreHandle_t lcdxfer_go = xSemaphoreCreateBinary();
@@ -106,10 +106,6 @@ volatile SemaphoreHandle_t vsync_event = xSemaphoreCreateBinary();
 
 IRAM_ATTR static bool test_notify_refresh_ready(esp_lcd_panel_handle_t panel, esp_lcd_dpi_panel_event_data_t *edata, void *user_ctx) {
   BaseType_t need_yield = pdFALSE;
-
-  fb_num++;
-  if (fb_num > 1)
-    fb_num = 0;
 
   uint16_t *fb = (uint16_t *)fb_hw[fb_num];
 
@@ -136,6 +132,10 @@ IRAM_ATTR static bool test_notify_refresh_ready(esp_lcd_panel_handle_t panel, es
     esp_cache_msync((void *)fb_hw[fb_num], LINE_BUF_SIZE * TEST_LCD_H_RES * 2, ESP_CACHE_MSYNC_FLAG_DIR_C2M | ESP_CACHE_MSYNC_FLAG_UNALIGNED);
   }
 
+  fb_num++;
+  if (fb_num > 1)
+    fb_num = 0;
+
   line_block_cnt++;
   if (line_block_cnt == TEST_LCD_V_RES / LINE_BUF_SIZE - 0) {
     line_block_cnt = 0;
@@ -150,12 +150,30 @@ IRAM_ATTR static bool test_notify_refresh_ready(esp_lcd_panel_handle_t panel, es
 static void test_init_lcd(void) {
 #if TEST_PIN_NUM_BK_LIGHT >= 0
   ESP_LOGI(TAG, "Turn on LCD backlight");
-  gpio_config_t bk_gpio_config = {
-    .pin_bit_mask = 1ULL << TEST_PIN_NUM_BK_LIGHT,
-    .mode = GPIO_MODE_OUTPUT
-  };
-  assert(gpio_config(&bk_gpio_config) == ESP_OK);
-  assert(gpio_set_level(TEST_PIN_NUM_BK_LIGHT, TEST_LCD_BK_LIGHT_ON_LEVEL) == ESP_OK);
+
+  gpio_reset_pin((gpio_num_t) TEST_PIN_NUM_BK_LIGHT);
+
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode       = LEDC_LOW_SPEED_MODE,
+        .duty_resolution  = LEDC_TIMER_8_BIT,
+        .timer_num        = LEDC_TIMER_0,
+        .freq_hz          = (100000),
+        .clk_cfg          = LEDC_USE_XTAL_CLK
+    };
+
+    ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+
+    ledc_channel_config_t ledc_channel = {
+        .gpio_num       = TEST_PIN_NUM_BK_LIGHT,
+        .speed_mode     = LEDC_LOW_SPEED_MODE,
+        .channel        = LEDC_CHANNEL_0,
+        .intr_type      = LEDC_INTR_DISABLE,
+        .timer_sel      = LEDC_TIMER_0,
+        .duty           = 75, // max: 255
+        .hpoint         = 0
+    };
+
+    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 #endif
 
   // Turn on the power for MIPI DSI PHY, so it can go from "No Power" state to "Shutdown" state
@@ -195,7 +213,7 @@ static void test_init_lcd(void) {
     .vendor_config = &vendor_config,
   };
   assert(esp_lcd_new_panel_ek79007(mipi_dbi_io, &panel_config, &panel_handle) == ESP_OK);
-  assert(esp_lcd_dpi_panel_get_frame_buffer(panel_handle, 2, (void **)&fb_hw[0], (void **)&fb_hw[1]) == ESP_OK);
+  assert(esp_lcd_dpi_panel_get_frame_buffer(panel_handle, 2, (void **) &fb_hw[0], (void **) &fb_hw[1]) == ESP_OK);
   assert(esp_lcd_panel_reset(panel_handle) == ESP_OK);
   assert(esp_lcd_panel_init(panel_handle) == ESP_OK);
 
@@ -241,10 +259,6 @@ int brightness = 4;
 uint16_t dpad;
 uint16_t buts;
 
-//static bool apu_enabled = true;
-//static bool lowpass_filter = false;
-//static int frameskip = 4;
-
 // snes stuff
 bool overclock_cycles = false;
 int one_c = 4, slow_one_c = 5, two_c = 6;
@@ -261,7 +275,6 @@ int sd_init = 0;
 #define AUDIO_BUFFER_LENGTH (AUDIO_SAMPLE_RATE / 60)
 #define AUDIO_LOW_PASS_RANGE ((60 * 65536) / 100)
 int16_t audio_buf[2][AUDIO_BUFFER_LENGTH * 2];  // stereo
-
 
 bool set_brightness(int level) {
   if ((level < 0) || (level > 255))
@@ -410,9 +423,6 @@ static bool load_state_handler(char *filename) {
 #endif
 }
 
-uint32_t timer_str_ld = 0;
-int str_ld_debounce = 0;
-
 void check_load_save(void) {
 }
 
@@ -480,7 +490,10 @@ void JustifierButtons(uint32_t *justifiers) {
 }
 
 void emu_panic(char *str) {
-  //  Serial.println(str);
+  printf("%s\n", str);
+
+  vTaskDelay( 1000 / portTICK_PERIOD_MS );
+
   assert(NULL);
 }
 
@@ -494,7 +507,6 @@ void lcdxfertask(void *parameter) {
   while (1) {
     while (xSemaphoreTake(lcdxfer_go, portMAX_DELAY) != pdTRUE)
       ;
-      /*
     while ( xSemaphoreTake(lcdxfer_go, 0) != pdTRUE ) {
 #ifdef MIXSAMP_CORE2
       if (mixsamp) {
@@ -503,7 +515,6 @@ void lcdxfertask(void *parameter) {
       }
 #endif      
     }
-*/
 
 #ifdef MIXSAMP_CORE2
     mixsamp = 1;
@@ -528,6 +539,13 @@ void setup(void) {
 
   fb_back = fb[1];
 
+#ifdef SD_ENABLED
+  //Serial.println("Initializing SPI...");
+  SPI.begin(PIN_SD_SCK, PIN_SD_MISO, PIN_SD_MOSI, -1);
+#endif
+}
+
+void start_lcd_buffer_xfer_task() {
   xTaskCreatePinnedToCore(
     lcdxfertask,   /* Function to implement the task */
     "lcdXferTask", /* Name of the task */
@@ -536,11 +554,37 @@ void setup(void) {
     0,             /* Priority of the task */
     NULL,          /* Task handle. */
     1);            /* Core where the task should run */
+}
 
-#ifdef SD_ENABLED
-  //Serial.println("Initializing SPI...");
-  SPI.begin(PIN_SD_SCK, PIN_SD_MISO, PIN_SD_MOSI, -1);
-#endif
+bool copy_rom_to_psram() {
+  uint8_t *tmp_rom;
+
+  // load a ROM from flash
+  spi_flash_mmap_handle_t out_handle;
+  assert(spi_flash_mmap(0x400000 /* size_t src_addr */,
+                        0x400000 /* size_t size */,
+                        SPI_FLASH_MMAP_DATA /* spi_flash_mmap_memory_t memory */,
+                        (const void **)&(tmp_rom) /* const void **out_ptr */,
+                        &out_handle /* spi_flash_mmap_handle_t *out_handle */)
+         == ESP_OK);
+
+  //Memory.ROM_Size = 2621440;  // All Stars + Super Mario World
+  //Memory.ROM_Size = 512 * 1024;  // Super Mario World
+  Memory.ROM_Size = 0x400000;  // Donkey Kong Country
+
+  // copy ROM to PSRAM
+  size_t rom_header_offset = 0;
+  if (Memory.ROM_Size % 4096)
+    rom_header_offset = 512;
+    
+  Memory.ROM = (uint8_t*) heap_caps_calloc(1, Memory.ROM_Size - rom_header_offset, MALLOC_CAP_SPIRAM);
+
+  assert(Memory.ROM);
+
+  for (uint32_t i = 0; i < Memory.ROM_Size - rom_header_offset; i++)
+    Memory.ROM[i] = tmp_rom[i + rom_header_offset];
+  
+  return true;
 }
 
 // freeRTOS calls app_main from C
@@ -564,34 +608,10 @@ void app_main(void) {
 #if 0
   ctrl_init();
 #endif
+
   /****************************/
   /*     Graphics setup       */
   /****************************/
-#if 0
-  gpio_reset_pin((gpio_num_t) PIN_LCD_BL);
-
-    ledc_timer_config_t ledc_timer = {
-        .speed_mode       = LEDC_LOW_SPEED_MODE,
-        .duty_resolution  = LEDC_TIMER_8_BIT,
-        .timer_num        = LEDC_TIMER_0,
-        .freq_hz          = (100000),
-        .clk_cfg          = LEDC_USE_XTAL_CLK
-    };
-
-    ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
-
-    ledc_channel_config_t ledc_channel = {
-        .gpio_num       = PIN_LCD_BL,
-        .speed_mode     = LEDC_LOW_SPEED_MODE,
-        .channel        = LEDC_CHANNEL_0,
-        .intr_type      = LEDC_INTR_DISABLE,
-        .timer_sel      = LEDC_TIMER_0,
-        .duty           = 50, // max: 255
-        .hpoint         = 0
-    };
-
-    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
-#endif
 
   Settings.CyclesPercentage = 100;
   Settings.H_Max = SNES_CYCLES_PER_SCANLINE;
@@ -609,23 +629,6 @@ void app_main(void) {
   if (!S9xInitMemory())
     emu_panic("Memory init failed!");
 
-  uint8_t *tmp_rom;
-
-  // load a ROM from flash
-  spi_flash_mmap_handle_t out_handle;
-  assert(spi_flash_mmap(0x400000 /* size_t src_addr */,
-                        0x400000 /* size_t size */,
-                        SPI_FLASH_MMAP_DATA /* spi_flash_mmap_memory_t memory */,
-                        (const void **)&(tmp_rom) /* const void **out_ptr */,
-                        &out_handle /* spi_flash_mmap_handle_t *out_handle */)
-         == ESP_OK);
-  //Memory.ROM_Size = 2621440;  // All Stars + Super Mario World
-  Memory.ROM_Size = 512 * 1024;  // Super Mario World
-
-  // copy ROM to PSRAM
-  for (uint32_t i = 0; i < Memory.ROM_Size; i++)
-    Memory.ROM[i] = tmp_rom[i + 512];
-
   if (!S9xInitDisplay())
     emu_panic("Display init failed!");
 
@@ -638,14 +641,14 @@ void app_main(void) {
   if (!S9xInitGFX())
     emu_panic("Graphics init failed!");
 
-
   // load rom
+  copy_rom_to_psram();
   if (!LoadROM(NULL))
     emu_panic("ROM loading failed!");
 
   printf("ROM loaded.\n");
 
-  savestate_name = (char *)Memory.ROMName;
+  savestate_name = (char *) Memory.ROMName;
   load_state_handler(savestate_name);  // try and load a saved state
 
 
@@ -664,10 +667,16 @@ void app_main(void) {
 
 #ifdef ENABLE_FRAMEDROPPING
   int frame = 0;
-  int framedrop_no = 0;
+  int framedrop_no = 6;  // don't render any nth frame
 #endif
 
   unsigned long fps_timer = millis();
+
+  // needs to take place this late to prevent a race condition
+  // on core 1 - cause unknown.
+  // Only a workaround until a clean vsync end signal is available
+  // from the MIPI driver
+  start_lcd_buffer_xfer_task();
 
   while (1) {
 #if 0
