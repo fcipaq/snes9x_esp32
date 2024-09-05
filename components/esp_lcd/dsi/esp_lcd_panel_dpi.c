@@ -105,6 +105,7 @@ static bool dma_trans_done_cb(dw_gdma_channel_handle_t chan, const dw_gdma_trans
     dw_gdma_channel_enable_ctrl(chan, true);  // fcipaq: rearm DMA
 
     // the DMA descriptor is large enough to carry a whole frame buffer, so this event can also be treated as a fake "vsync end"  
+    // fcipaq: the above no longer applies. TODO: find a way to get a "real" vsync end event
     if (dpi_panel->on_refresh_done) {
         if (dpi_panel->on_refresh_done(&dpi_panel->base, NULL, dpi_panel->user_ctx)) {
             linenums++;
