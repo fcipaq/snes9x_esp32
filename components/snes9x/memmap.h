@@ -81,7 +81,7 @@ enum
 
 enum
 {
-   MAX_ROM_SIZE = 0x400000,  // 4 MB cardridge
+   MAX_ROM_SIZE = 0x400000 + 0x200,  // 4 MB cardridge + 512 bytes header
    RAM_SIZE = 0x20000,
    SRAM_SIZE = 0x20000,
    VRAM_SIZE = 0x10000,

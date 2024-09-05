@@ -570,20 +570,18 @@ bool copy_rom_to_psram() {
 
   //Memory.ROM_Size = 2621440;  // All Stars + Super Mario World
   //Memory.ROM_Size = 512 * 1024;  // Super Mario World
-  Memory.ROM_Size = 0x400000;  // Donkey Kong Country
+  //Memory.ROM_Size = 0x400000;  // Donkey Kong Country
+  Memory.ROM_Size = 0x300200;  // The Lion King
 
-  // copy ROM to PSRAM
-  size_t rom_header_offset = 0;
-  if (Memory.ROM_Size % 4096)
-    rom_header_offset = 512;
-    
-  Memory.ROM = (uint8_t*) heap_caps_calloc(1, Memory.ROM_Size - rom_header_offset, MALLOC_CAP_SPIRAM);
+  Memory.ROM = (uint8_t*) heap_caps_calloc(1, Memory.ROM_Size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
 
   assert(Memory.ROM);
 
-  for (uint32_t i = 0; i < Memory.ROM_Size - rom_header_offset; i++)
-    Memory.ROM[i] = tmp_rom[i + rom_header_offset];
-  
+  for (uint32_t i = 0; i < Memory.ROM_Size; i++)
+    Memory.ROM[i] = tmp_rom[i];
+
+  spi_flash_munmap(out_handle);
+
   return true;
 }
 
