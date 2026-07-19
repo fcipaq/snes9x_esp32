@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.5)
 
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(snes-retrogo)
+project(snes9x_p2)
 
 #set (CMAKE_CXX_FLAGS "-mlongcalls")
 #set (CMAKE_C_FLAGS "-mlongcalls")

@@ -1,9 +1,9 @@
 #pragma once
 
 // 0: ESP32-P4-Function-EV-Board by Espressif
-// 1: Pico Held 2 v 1.2
-// 2: Pico Held 2 v 1.3
-// 3: Pico Held 2 v 1.4
+// 1: Pico Held 2 v 1.2  // prototype
+// 2: Pico Held 2 v 1.3  // prototype
+// 3: Pico Held 2 v 1.4  // Released version
 
 #define HW_CONFIG (3)
 
