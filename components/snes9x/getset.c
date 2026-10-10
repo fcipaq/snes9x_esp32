@@ -5,9 +5,11 @@
 #include "cpuexec.h"
 #include "obc1.h"
 
+#include "esp_attr.h"   /* IRAM_ATTR — hot memory-access path (Phase 50) */
+
 extern uint8_t OpenBus;
 
-uint8_t S9xGetByte(uint32_t Address)
+IRAM_ATTR uint8_t S9xGetByte(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress = Memory.Map [block = (Address >> MEMMAP_SHIFT) & MEMMAP_MASK];
@@ -53,7 +55,7 @@ uint8_t S9xGetByte(uint32_t Address)
    }
 }
 
-uint16_t S9xGetWord(uint32_t Address)
+IRAM_ATTR uint16_t S9xGetWord(uint32_t Address)
 {
    int32_t block;
    uint8_t* GetAddress;
@@ -114,7 +116,7 @@ uint16_t S9xGetWord(uint32_t Address)
    }
 }
 
-void S9xSetByte(uint8_t Byte, uint32_t Address)
+IRAM_ATTR void S9xSetByte(uint8_t Byte, uint32_t Address)
 {
    int32_t block;
    uint8_t* SetAddress = Memory.Map [block = ((Address >> MEMMAP_SHIFT) & MEMMAP_MASK)];
@@ -177,7 +179,7 @@ void S9xSetByte(uint8_t Byte, uint32_t Address)
    }
 }
 
-void S9xSetWord(uint16_t Word, uint32_t Address)
+IRAM_ATTR void S9xSetWord(uint16_t Word, uint32_t Address)
 {
    int32_t block;
    uint8_t* SetAddress;

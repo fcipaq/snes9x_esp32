@@ -126,6 +126,7 @@ int supply_type_last = -1;
 #define DRAW_BATTERY_Y (10)
 #define BAT_CRIT_BLINK_DURATION (500)
 #define BROWNOUT_DELAY (120000)  // time to shutdown system
+//#define AUTOOFF_ON_LOW_BATTERY  // shut down the system on low batter after BROWNOUT_DELAY ms 
 
 #define SAVESTATE_DIRECTORY "roms/snes/save/"
 #define ROM_DIRECTORY "roms/snes/"
@@ -326,8 +327,10 @@ void draw_battery(int x, int y, int level, gbuffer_t fb_back) {
       brownout_det = true;
     }
 
+#ifdef AUTOOFF_ON_LOW_BATTERY
     if (brownout_det && (millis() - brownout_det_timer > BROWNOUT_DELAY))
       pwr_shutdown();
+#endif
 
     if (brownout_det && (((millis() - brownout_det_timer ) % BAT_CRIT_BLINK_DURATION) > (BAT_CRIT_BLINK_DURATION / 2)))
       return;
