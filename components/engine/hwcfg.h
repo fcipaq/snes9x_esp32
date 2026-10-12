@@ -8,11 +8,6 @@
 #define HW_CONFIG (3)
 
 #if HW_CONFIG==0
-// ADC calibration coefficients
-#define PWR_BAT_ADC_A (0)
-#define PWR_BAT_ADC_B (0)
-#define PWR_EXT_ADC_A (0)
-#define PWR_EXT_ADC_B (0)
 
 // Physical battery and power supply parameters (in mV)
 #define PWR_BAT_MAX_VOL (4050)
@@ -96,6 +91,8 @@
 #define PWR_BAT_MIN_VOL (3400)
 #define PWR_CHG_MIN_VOL (4170)
 
+#define CAP_BATTERY
+
 #define PIN_PWR_EN (GPIO_NUM_53)
 #define PIN_CHG_STAT (GPIO_NUM_52)
 
@@ -160,16 +157,12 @@
 #define DISPLAY_DRIVER "lcd_hd395003c30.h"
 #define LCD_ROTATION
 
-// ADC calibration coefficients
-#define PWR_BAT_ADC_A (1365)
-#define PWR_BAT_ADC_B (-597)
-#define PWR_EXT_ADC_A (2749)
-#define PWR_EXT_ADC_B (-948)
-
 // Physical battery and power supply parameters (in mV)
 #define PWR_BAT_MAX_VOL (4050)
 #define PWR_BAT_MIN_VOL (3400)
 #define PWR_CHG_MIN_VOL (4170)
+
+#define CAP_BATTERY
 
 #define PIN_PWR_EN (GPIO_NUM_52)
 #define PIN_CHG_STAT (GPIO_NUM_53)
@@ -209,8 +202,8 @@
 #define PIN_ANA_X (GPIO_NUM_16)
 #define PIN_ANA_Y (GPIO_NUM_17)
 
-#define PIN_ANA_VBAT (GPIO_NUM_18)
-#define PIN_ANA_VEXT (GPIO_NUM_19)
+#define PIN_ANA_VBAT (GPIO_NUM_19)
+#define PIN_ANA_VEXT (GPIO_NUM_18)
 
 #define BUTTON_MAP {\
   { BUTTON_A,     PIN_BTN_A,     0, GPIO_PULLUP_ONLY,   BUTTON_PRESSED_WHEN_LO, BUTTON_DIGITAL, 0, 0 }, \
@@ -232,16 +225,12 @@
 #define DISPLAY_DRIVER "lcd_hd395003c30.h"
 #define LCD_ROTATION
 
-// ADC calibration coefficients
-#define PWR_BAT_ADC_A (5803)
-#define PWR_BAT_ADC_B (-11511)
-#define PWR_EXT_ADC_A (2749)
-#define PWR_EXT_ADC_B (-948)
-
 // Physical battery and power supply parameters (in mV)
 #define PWR_BAT_MAX_VOL (4050)
 #define PWR_BAT_MIN_VOL (3400)
 #define PWR_CHG_MIN_VOL (4170)
+
+#define CAP_BATTERY
 
 #define PIN_PWR_EN (GPIO_NUM_52)
 #define PIN_CHG_STAT (GPIO_NUM_53)
@@ -281,8 +270,8 @@
 #define PIN_ANA_X (GPIO_NUM_16)
 #define PIN_ANA_Y (GPIO_NUM_17)
 
-#define PIN_ANA_VBAT (GPIO_NUM_18)
-#define PIN_ANA_VEXT (GPIO_NUM_19)
+#define PIN_ANA_VBAT (GPIO_NUM_19)
+#define PIN_ANA_VEXT (GPIO_NUM_18)
 
 #define BUTTON_MAP {\
   { BUTTON_A,     PIN_BTN_A,     0, GPIO_PULLUP_ONLY,   BUTTON_PRESSED_WHEN_LO, BUTTON_DIGITAL,    0, 0 }, \

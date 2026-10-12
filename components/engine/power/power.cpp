@@ -10,51 +10,39 @@
 int pwr_initialized = 0;
 int pwr_sd_on = 0;
 
-// ADC
-int bat_vol = PWR_BAT_MAX_VOL;
+// ADC (millivolts of the real voltage, seeded with the first reading)
+int bat_vol = 0;
 int src_vol = 0;
 
 #define ADC_AVG_WIN (50)
 
-int result_volt;
-int returnvol() {
-  return result_volt;
-}
-
-int pwr_get_calibrated_volt(int raw, int a, int b) {
-  return (raw * a) / 1000 + b;
-}
-
-// Read raw battery and average values
+// Read battery voltage and average.
+// adc_analog_read() returns calibrated millivolts, divider already compensated.
 int pwr_get_bat_vol() {
   if (PIN_ANA_VBAT == GPIO_NUM_NC)
     return 0;
 
-  int raw = adc_analog_read(PIN_ANA_VBAT);
+  int vol = adc_analog_read(PIN_ANA_VBAT);
 
-#if 1  
-  int vol = pwr_get_calibrated_volt(raw, PWR_BAT_ADC_A, PWR_BAT_ADC_B);
-#else
-  int vol = raw;
-#endif
-
-  bat_vol = (bat_vol * ADC_AVG_WIN + vol) / (ADC_AVG_WIN + 1);
-  //printf("avg vbat is: %d\n", (int) bat_vol);
-  result_volt = bat_vol;
+  if (bat_vol == 0)
+    bat_vol = vol;
+  else
+    bat_vol = (bat_vol * ADC_AVG_WIN + vol) / (ADC_AVG_WIN + 1);
 
   return bat_vol;
 }
 
-// Read raw battery and average values
+// Read external supply voltage and average
 int pwr_get_src_vol() {
   if (PIN_ANA_VEXT == GPIO_NUM_NC)
     return 0;
 
-  int raw = adc_analog_read(PIN_ANA_VEXT);
-  
-  int vol = pwr_get_calibrated_volt(raw, PWR_EXT_ADC_A, PWR_EXT_ADC_B);
+  int vol = adc_analog_read(PIN_ANA_VEXT);
 
-  src_vol = (src_vol * ADC_AVG_WIN + vol) / (ADC_AVG_WIN + 1);
+  if (src_vol == 0)
+    src_vol = vol;
+  else
+    src_vol = (src_vol * ADC_AVG_WIN + vol) / (ADC_AVG_WIN + 1);
 
   return src_vol;
 }
@@ -156,12 +144,13 @@ void pwr_init() {
   if (pwr_initialized)
     return;
 
-  adc_init();  
+  // adc.cpp forces 12 dB for VBAT/VEXT (divider-scaled inputs)
+  adc_init();
   if (PIN_ANA_VEXT != GPIO_NUM_NC)
     adc_setup_gpio(PIN_ANA_VEXT, ADC_ATTEN_DB_12);
 
   if (PIN_ANA_VBAT != GPIO_NUM_NC)
-    adc_setup_gpio(PIN_ANA_VBAT, ADC_ATTEN_DB_6);
+    adc_setup_gpio(PIN_ANA_VBAT, ADC_ATTEN_DB_12);
 
   if (PIN_CHG_STAT != GPIO_NUM_NC) {
     gpio_reset_pin(PIN_CHG_STAT);
@@ -184,5 +173,3 @@ void pwr_init() {
 
   pwr_initialized = 1;
 }
-
-

@@ -8,12 +8,14 @@ void pwr_init();
 void pwr_shutdown();
 void pwr_amp(int on);
 void pwr_sd(int on);
+bool pwr_sd_det();
+
 int pwr_get_bat_vol();
 int pwr_get_bat_level(int granularity);
 int pwr_get_source();
-bool pwr_sd_det();
+int pwr_get_src_vol();
 
+// fix me
 void snd_mute();
 void snd_unmute();
 
-int returnvol();

@@ -126,7 +126,6 @@ int supply_type_last = -1;
 #define DRAW_BATTERY_Y (10)
 #define BAT_CRIT_BLINK_DURATION (500)
 #define BROWNOUT_DELAY (120000)  // time to shutdown system
-//#define AUTOOFF_ON_LOW_BATTERY  // shut down the system on low batter after BROWNOUT_DELAY ms 
 
 #define SAVESTATE_DIRECTORY "roms/snes/save/"
 #define ROM_DIRECTORY "roms/snes/"
@@ -316,10 +315,25 @@ void draw_battery(int x, int y, int level, gbuffer_t fb_back) {
   font_t* menu_font = (font_t*) MENU_FONT;
     char temp[10];
     pwr_get_source();
-    itoa(returnvol(), temp, 10);
-  font_write_string(50, 0, 0xffff, (char*) temp, menu_font, fb_back);
+    itoa(pwr_get_bat_vol(), temp, 10);
+    font_write_string(50, 0, 0xffff, (char*) temp, menu_font, fb_back);
+    itoa(pwr_get_src_vol(), temp, 10);
+    font_write_string(50, 15, 0xffff, (char*) temp, menu_font, fb_back);
+    
+    itoa(pwr_get_vbat_raw(), temp, 10);
+    font_write_string(100, 0, 0xffff, (char*) temp, menu_font, fb_back);
+    itoa(pwr_get_vext_raw(), temp, 10);
+    font_write_string(100, 15, 0xffff, (char*) temp, menu_font, fb_back);
+
+    itoa(pwr_get_bat_level(100), temp, 10);
+
+    font_write_string(100, 30, 0xffff, (char*) temp, menu_font, fb_back);
+    itoa(pwr_get_bat_level(4), temp, 10);
+    font_write_string(50, 30, 0xffff, (char*) temp, menu_font, fb_back);
+
   return;
 #endif
+
 #if defined(CAP_BATTERY) && !defined(DEVBOARD)
   if (pwr_get_source() != PWR_ON_GRD) {
       if ((pwr_get_bat_vol() <= (PWR_BAT_MIN_VOL + 50)) && !brownout_det) {
@@ -327,10 +341,8 @@ void draw_battery(int x, int y, int level, gbuffer_t fb_back) {
       brownout_det = true;
     }
 
-#ifdef AUTOOFF_ON_LOW_BATTERY
     if (brownout_det && (millis() - brownout_det_timer > BROWNOUT_DELAY))
       pwr_shutdown();
-#endif
 
     if (brownout_det && (((millis() - brownout_det_timer ) % BAT_CRIT_BLINK_DURATION) > (BAT_CRIT_BLINK_DURATION / 2)))
       return;
