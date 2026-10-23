@@ -12,3 +12,6 @@ project(snes9x_p2)
 #set (CMAKE_CXX_FLAGS "-mlongcalls")
 #set (CMAKE_C_FLAGS "-mlongcalls")
 
+#idf_build_set_property(COMPILE_OPTIONS "-O3" APPEND)
+#idf_build_set_property(COMPILE_OPTIONS "-Wno-error=maybe-uninitialized" APPEND)
+
